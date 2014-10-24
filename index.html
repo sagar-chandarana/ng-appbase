@@ -1,0 +1,44 @@
+<html ng-app='test'>
+<head>
+  <title>Hey</title>
+  <body>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.20/angular.js"></script>
+    <script src="https://cdn.appbase.io/2.0/appbase.min.js"></script>
+    <script src="./ng-appbase.js"></script>
+    <script>
+      
+    angular.module('test', ['ngAppbase'])
+    .run(function($appbase) {
+      $appbase.credentials('sagar', '18efd689a4605210d1793d486731e285');
+      window.$appbase = $appbase;
+    })
+    .controller("testController", function($scope, $appbase) {
+      $scope.vertices = $appbase.ns('Materials').bindVertices($scope);
+      $scope.edges = $appbase.ns('user').v('sagar1/meetings').bindEdges($scope);
+      $scope.vertex = $appbase.ns('user').v('sagar1').bindProperties($scope);
+    });
+    </script>
+    
+    <div ng-controller="testController">
+      <h2>Appname: 'sagar'</h2>
+      <h3>bindProperties: Properties of 'user/sagar1'</h3>
+      {{vertex}}
+      <hr>
+      <h3>bindVertices: Listing vertices under 'Materials'</h3>
+      <ul>
+        <li ng-repeat="vertex in vertices">
+          {{vertex.name}}: {{vertex.properties}}
+        </li>
+      </ul>
+      <hr>
+      <h3>bindEdges: Listing edges under 'user/sagar1/meetings'</h3>
+      <ul>
+        <li ng-repeat="edge in edges">
+          {{edge.name}}: {{edge.properties}}
+        </li>
+      </ul>
+      <hr>
+    </div>
+  </body>
+</head>
+</html>
