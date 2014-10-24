@@ -1,15 +1,15 @@
 /**
- * Created by Sagar on 12/8/14.
+ * Created by Sagar on 23/10/14.
  */
 (function() {
 
-var replaceObjInPlace = function(src, dest) {
-  for(var prop in src) {
-    delete src[prop]
+var copyObjInPlace = function(from, to) {
+  for(var prop in to) {
+    delete to[prop]
   }
 
-  for(var prop in dest) {
-    src[prop] = dest[prop]
+  for(var prop in from) {
+    to[prop] = from[prop]
   }
 }
 
@@ -37,18 +37,18 @@ var phaadArray = function(reverse, callbacks, $timeout, remoteScope) {
     var updateScope = $timeout.bind(null, function() {});
     var added;
     vObj.properties = vObj.ref.bindProperties(remoteScope, {
-      onProperties: function(newProps) {
+      onProperties: function(scope, newProps) {
         vObj.properties = newProps;
         if(!added) {
           if(callbacks.onAdd) {
-            callbacks.onAdd(vObj, vObj.ref, addNow);
+            callbacks.onAdd(remoteScope, vObj, vObj.ref, addNow);
           }
           else {
             addNow(); //adds the object into the array
           }
         } else {
           if(callbacks.onChange) {
-            callbacks.onChange(vObj, vObj.ref, updateScope);
+            callbacks.onChange(remoteScope, vObj, vObj.ref, updateScope);
           }
           else {
             updateScope();// just update the scope, and dont call addNow() which adds a new obj
@@ -64,7 +64,7 @@ var phaadArray = function(reverse, callbacks, $timeout, remoteScope) {
     removeNow = $timeout.bind(null, removeNow);
     vObj.ref.unbindProperties();
     if(callbacks.onRemove) {
-      callbacks.onRemove(vObj, vObj.ref, removeNow);
+      callbacks.onRemove(remoteScope, vObj, vObj.ref, removeNow);
     } else {
       removeNow();
     }
@@ -137,7 +137,7 @@ var phaadArray = function(reverse, callbacks, $timeout, remoteScope) {
   return exports;
 }
 
-angular.module('Appbase',[])
+angular.module('ngAppbase',[])
   .factory('$appbase', function($timeout) {
     if(typeof Appbase === 'undefined') {
       throw ("Appbase library is not loaded.");
@@ -165,7 +165,6 @@ angular.module('Appbase',[])
             throw error;
             return;
           }
-          //TODO: name and proper vRef
           var vPath = parsePath(vRef.path()).v;
           var vKey = parsePath(vPath).ns;
           var vObj = { name: vKey, ref: vRefNG(vRef.path())};
@@ -196,7 +195,7 @@ angular.module('Appbase',[])
           var vObj = dataExposed.data[0];
           dataExposed.data.splice(0, 1);
           vObj.ref.unbindProperties();
-          callbacks.onUnbind && callbacks.onUnbind(vObj);
+          callbacks.onUnbind && callbacks.onUnbind(remoteScope, vObj);
         }
       }
       
@@ -234,9 +233,9 @@ angular.module('Appbase',[])
           }
           
           var newProps = vSnap.properties();
-          var done = $timeout.bind(null, replaceObjInPlace.bind(null, newProps, dataExposed.properties));
+          var done = $timeout.bind(null, copyObjInPlace.bind(null, newProps, dataExposed.properties));
           if(callbacks.properties.onProperties) {
-            callbacks.properties.onProperties(newProps, ref, done);
+            callbacks.properties.onProperties(remoteScope, newProps, ref, done);
           } else {
             done();
           }
@@ -251,7 +250,7 @@ angular.module('Appbase',[])
       
       ref.unbindProperties = function() {
         refCopy.off('properties');
-        callbacks.properties.onUnbind && callbacks.properties.onUnbind(dataExposed.properties, ref);
+        callbacks.properties.onUnbind && callbacks.properties.onUnbind(remoteScopes.properties, dataExposed.properties, ref);
       }
 
       ref.bindEdges = function(remoteScope, cb, reverse) {
@@ -301,7 +300,7 @@ angular.module('Appbase',[])
           var vObj = dataExposed.edges.data[0];
           dataExposed.edges.data.splice(0, 1);
           vObj.ref.unbindProperties();
-          callbacks.edges.onUnbind && callbacks.edges.onUnbind(vObj);
+          callbacks.edges.onUnbind && callbacks.edges.onUnbind(remoteScopes.edges, vObj);
         }
       }
       
