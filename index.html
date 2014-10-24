@@ -10,7 +10,6 @@
     angular.module('test', ['ngAppbase'])
     .run(function($appbase) {
       $appbase.credentials('sagar', '18efd689a4605210d1793d486731e285');
-      window.$appbase = $appbase;
     })
     .controller("testController", function($scope, $appbase) {
       $scope.vertices = $appbase.ns('Materials').bindVertices($scope);
