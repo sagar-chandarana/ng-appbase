@@ -5,11 +5,11 @@
 
 var copyObjInPlace = function(from, to) {
   for(var prop in to) {
-    delete to[prop]
+    delete to[prop];
   }
 
   for(var prop in from) {
-    to[prop] = from[prop]
+    to[prop] = from[prop];
   }
 }
 
@@ -55,8 +55,6 @@ var phaadArray = function(reverse, callbacks, $timeout, remoteScope) {
             updateScope();// just update the scope, and dont call addNow() which adds a new obj
           }
         }
-      },
-      onUnbind: function() {
       }
     });
   }
@@ -80,21 +78,21 @@ var phaadArray = function(reverse, callbacks, $timeout, remoteScope) {
     var addNow = function () {
       for(var i = 0; i<exports.data.length && !added && obj.priority !== undefined; i++) {
         if(reverse? exports.data[i].priority < obj.priority : exports.data[i].priority < obj.priority) {
-          exports.data.splice(i, 0, obj)
-          added = true
-          break
+          exports.data.splice(i, 0, obj);
+          added = true;
+          break;
         }
       }
 
       if(!added) {
-        reverse? exports.data.unshift(obj) : exports.data.push(obj)
-        added = true
+        reverse? exports.data.push(obj) : exports.data.unshift(obj);
+        added = true;
       }
 
       //checking if delete was called on the name while performing onAdd
       if(toBeDeleted[name] > 0) {
-        toBeDeleted[name]--
-        exports.remove(name)
+        toBeDeleted[name]--;
+        exports.remove(name);
       }
     }
 
