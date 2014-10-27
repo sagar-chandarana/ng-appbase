@@ -181,7 +181,7 @@ angular.module('ngAppbase',[])
         })
 
         remoteScope && remoteScope.$on('$destroy', function() {
-          nsRefCopy.unbindEdges();
+          nsRef.unbindVertices();
         })
 
         return dataExposed.data;
