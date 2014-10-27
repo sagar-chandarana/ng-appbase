@@ -40,6 +40,7 @@ var phaadArray = function(reverse, callbacks, $timeout, remoteScope) {
       onProperties: function(scope, newProps) {
         vObj.properties = newProps;
         if(!added) {
+          added = true;
           if(callbacks.onAdd) {
             callbacks.onAdd(remoteScope, vObj, vObj.ref, addNow);
           }
@@ -182,7 +183,7 @@ angular.module('ngAppbase',[])
         })
 
         remoteScope && remoteScope.$on('$destroy', function() {
-          ref.unbindEdges();
+          nsRefCopy.unbindEdges();
         })
 
         return dataExposed.data;
@@ -296,7 +297,7 @@ angular.module('ngAppbase',[])
         refCopy.off('edge_added');
         refCopy.off('edge_removed');
         refCopy.off('edge_changed');
-        while(dataExposed.edges.data.length > 0) {
+        while(dataExposed.edges && dataExposed.edges.data.length > 0) {
           var vObj = dataExposed.edges.data[0];
           dataExposed.edges.data.splice(0, 1);
           vObj.ref.unbindProperties();
