@@ -153,6 +153,7 @@ angular.module('ngAppbase',[])
       var origMethods = {};
       var callbacks;
       var remoteScope;
+      var dataExposed;
       
       nsRef.bindVertices = function(remoteS, cb, reverse) {
         remoteScope = remoteS;
@@ -190,7 +191,7 @@ angular.module('ngAppbase',[])
       nsRef.unbindVertices = function() {
         nsRefCopy.off('vertex_added');
         nsRefCopy.off('vertex_destroyed');
-        while(dataExposed.data.length > 0) {
+        if(dataExposed && dataExposed.data) while(dataExposed.data.length > 0) {
           var vObj = dataExposed.data[0];
           dataExposed.data.splice(0, 1);
           vObj.ref.unbindProperties();
