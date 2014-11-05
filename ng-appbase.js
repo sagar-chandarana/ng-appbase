@@ -171,7 +171,7 @@ angular.module('ngAppbase',[])
           dataExposed.add(vObj.name, vObj);
         })
 
-        nsRefCopy.on('vertex_destroyed',function(error, vRef) {
+        nsRefCopy.on('vertex_removed',function(error, vRef) {
           if(error) {
             throw error;
             return;
@@ -190,7 +190,7 @@ angular.module('ngAppbase',[])
 
       nsRef.unbindVertices = function() {
         nsRefCopy.off('vertex_added');
-        nsRefCopy.off('vertex_destroyed');
+        nsRefCopy.off('vertex_removed');
         if(dataExposed && dataExposed.data) while(dataExposed.data.length > 0) {
           var vObj = dataExposed.data[0];
           dataExposed.data.splice(0, 1);
