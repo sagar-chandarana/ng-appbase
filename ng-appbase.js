@@ -17,7 +17,7 @@ var parsePath = function(path) {
   var slashIndex;
   return {
     ns: path.slice(0, ((slashIndex = path.indexOf('/')) !== -1) ? slashIndex : undefined),
-    v: path.slice(path.indexOf('/') + 1)
+    v: path.slice((slashIndex !== -1)? slashIndex + 1 : undefined)
   }
 }
 
@@ -210,8 +210,10 @@ angular.module('ngAppbase',[])
 
     //returns an Appbase vertex reference, with injected methods: bindProperties, bindEdges, unbindProperties, unbindEdges, unbind
     var vRefNG = function(path) {
-      var ref = Appbase.ns(parsePath(path).ns).v(parsePath(path).v); //inject methods on this reference
-      var refCopy = Appbase.ns(parsePath(path).ns).v(parsePath(path).v);  // as bind-unbind rely on 'on' methods, they are done on this ref, so that they dont interfere with 'on' methods of the refrence which is returned.
+      var parsed = parsePath(path);
+      if(!parsed.v) return;
+      var ref = Appbase.ns(parsed.ns).v(parsed.v); //inject methods on this reference
+      var refCopy = Appbase.ns(parsed.ns).v(parsed.v);  // as bind-unbind rely on 'on' methods, they are done on this ref, so that they dont interfere with 'on' methods of the refrence which is returned.
       
       var callbacks = {
         properties: {
@@ -311,7 +313,7 @@ angular.module('ngAppbase',[])
       
       return ref;
     }
-
+    
     for(var methodName in Appbase) {
       if($appbase[methodName] === undefined) {
         $appbase[methodName] = Appbase[methodName];
