@@ -1,6 +1,6 @@
 # Angular binding for Appbase
 
-Current version: 2.2.1
+Current version: 2.2.2
 
 [TEST Page](http://sagarchandarana123.github.io/ng-appbase)
 

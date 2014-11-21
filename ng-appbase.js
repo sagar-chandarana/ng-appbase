@@ -144,13 +144,14 @@ angular.module('ngAppbase',[])
       throw ("Wrong version of Appbase library is loaded. Make sure you are using v2.0");
     }
   
+    
+  
     var $appbase = {};
 
     //returns an Appbase namespace reference, with injected methods: bindVertices, unbindVertices, unbind
     $appbase.ns = function(namespace) {
       var nsRef = Appbase.ns(namespace);
       var nsRefCopy = Appbase.ns(namespace); // as bind-unbind rely on 'on' methods, they are done on this ref, so that they dont interfere with 'on' methods of the refrence which is returned.
-      var origMethods = {};
       var callbacks;
       var remoteScope;
       var dataExposed;
@@ -200,20 +201,23 @@ angular.module('ngAppbase',[])
       }
       
       nsRef.unbind = nsRef.unbindVertices;
-      
-      nsRef.v = function(path) {
-        return vRefNG(namespace + '/' + path);
-      }
+      nsRef.isModified = true;
 
       return nsRef;
     }
 
     //returns an Appbase vertex reference, with injected methods: bindProperties, bindEdges, unbindProperties, unbindEdges, unbind
-    var vRefNG = function(path) {
-      var parsed = parsePath(path);
-      if(!parsed.v) return;
-      var ref = Appbase.ns(parsed.ns).v(parsed.v); //inject methods on this reference
-      var refCopy = Appbase.ns(parsed.ns).v(parsed.v);  // as bind-unbind rely on 'on' methods, they are done on this ref, so that they dont interfere with 'on' methods of the refrence which is returned.
+    var vRefNG = function(pathOrRef) {
+      var parsed, ref, refCopy;
+      if(typeof pathOrRef === 'string') {
+        parsed = parsePath(pathOrRef);
+        if(!parsed.v) return;
+        ref = Appbase.ns(parsed.ns).v(parsed.v); //inject methods on this reference
+      } else {
+        ref = pathOrRef;
+        parsed = parsePath(ref.path());
+      }
+      refCopy = Appbase.ns(parsed.ns).v(parsed.v);  // as bind-unbind rely on 'on' methods, they are done on this ref, so that they dont interfere with 'on' methods of the refrence which is returned.
       
       var callbacks = {
         properties: {
@@ -311,6 +315,8 @@ angular.module('ngAppbase',[])
         ref.unbindProperties();
       }
       
+      ref.isModified = true;
+      
       return ref;
     }
     
@@ -319,7 +325,11 @@ angular.module('ngAppbase',[])
         $appbase[methodName] = Appbase[methodName];
       }
     }
+
+    // setting vertex method
+    Appbase.vRefModifier(vRefNG);
     return $appbase;
+  
   })
 
 }());
