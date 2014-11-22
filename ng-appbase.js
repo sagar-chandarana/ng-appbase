@@ -170,7 +170,7 @@ angular.module('ngAppbase',[])
           var vKey = parsePath(vPath).ns;
           var vObj = { name: vKey, ref: vRefNG(vRef.path())};
           dataExposed.add(vObj.name, vObj);
-        })
+        }, callbacks.onComplete || function() {});
 
         nsRefCopy.on('vertex_removed',function(error, vRef) {
           if(error) {
@@ -271,7 +271,7 @@ angular.module('ngAppbase',[])
           }
           var vObj = { name: edgeSnap.name(), priority: edgeSnap.priority(), ref: vRefNG(edgeRef.path())};
           dataExposed.edges.add(vObj.name, vObj);
-        })
+        }, callbacks.edges.onComplete || function() {});
 
         refCopy.on('edge_removed',function(error, edgeRef, edgeSnap) {
           if(error) {
