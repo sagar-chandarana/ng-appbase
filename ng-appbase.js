@@ -27,10 +27,25 @@ var parsePath = function(path) {
    - automatically fetches vertices' properties and adds into the object
    - allows onAdd/onRemove/onChange callbacks.
 */
-var phaadArray = function(reverse, callbacks, $timeout, remoteScope) {
+var phaadArray = function(reverse, callbacks, $timeout, remoteScope, ref) {
   var exports = {};
   var toBeDeleted = {};
   exports.data = [];
+  var toBeAdded = 0;
+  
+  var initialAddCompleted;
+  var checkIfComplete = function() {
+    if(toBeAdded === 0 && initialAddCompleted) {
+      if(callbacks.onComplete) {
+        callbacks.onComplete(remoteScope, ref);
+      }
+    }
+  };
+  
+  exports.initialAddComplete = function() {
+    initialAddCompleted = true;
+    checkIfComplete();
+  };
 
   handleAdd = function(name, vObj, addNow) {
     addNow = $timeout.bind(null, addNow);
@@ -74,19 +89,26 @@ var phaadArray = function(reverse, callbacks, $timeout, remoteScope) {
       toBeDeleted[name]--
       return
     }
+    toBeAdded += 1;
     var added;
     var addNow = function () {
+      var onAdd = function() {        
+        added = true;
+        toBeAdded -= 1;
+        checkIfComplete();
+      }
+      
       for(var i = 0; i<exports.data.length && !added && obj.priority !== undefined; i++) {
         if(reverse? exports.data[i].priority < obj.priority : exports.data[i].priority < obj.priority) {
           exports.data.splice(i, 0, obj);
-          added = true;
+          onAdd();
           break;
         }
       }
 
       if(!added) {
         reverse? exports.data.push(obj) : exports.data.unshift(obj);
-        added = true;
+        onAdd();
       }
 
       //checking if delete was called on the name while performing onAdd
@@ -143,9 +165,6 @@ angular.module('ngAppbase',[])
     } else if (Appbase.ns === undefined) {
       throw ("Wrong version of Appbase library is loaded. Make sure you are using v2.0");
     }
-  
-    
-  
     var $appbase = {};
 
     //returns an Appbase namespace reference, with injected methods: bindVertices, unbindVertices, unbind
@@ -159,7 +178,7 @@ angular.module('ngAppbase',[])
       nsRef.bindVertices = function(remoteS, cb, reverse) {
         remoteScope = remoteS;
         callbacks = cb || {};
-        dataExposed = phaadArray(reverse, callbacks, $timeout, remoteScope);
+        dataExposed = phaadArray(reverse, callbacks, $timeout, remoteScope, nsRef);
         
         nsRefCopy.on('vertex_added', function(error, vRef) {
           if(error) {
@@ -170,7 +189,9 @@ angular.module('ngAppbase',[])
           var vKey = parsePath(vPath).ns;
           var vObj = { name: vKey, ref: vRefNG(vRef.path())};
           dataExposed.add(vObj.name, vObj);
-        }, callbacks.onComplete || function() {});
+        }, function() {
+          dataExposed.initialAddComplete();
+        });
 
         nsRefCopy.on('vertex_removed',function(error, vRef) {
           if(error) {
@@ -262,7 +283,7 @@ angular.module('ngAppbase',[])
       ref.bindEdges = function(remoteScope, cb, reverse) {
         remoteScopes.edges = remoteScope;
         callbacks.edges = cb || {};
-        dataExposed.edges = phaadArray(reverse, callbacks.edges, $timeout, remoteScope);
+        dataExposed.edges = phaadArray(reverse, callbacks.edges, $timeout, remoteScope, ref);
         
         refCopy.on('edge_added',function(error, edgeRef, edgeSnap) {
           if(error) {
@@ -271,7 +292,9 @@ angular.module('ngAppbase',[])
           }
           var vObj = { name: edgeSnap.name(), priority: edgeSnap.priority(), ref: vRefNG(edgeRef.path())};
           dataExposed.edges.add(vObj.name, vObj);
-        }, callbacks.edges.onComplete || function() {});
+        }, function() {
+          dataExposed.edges.initialAddComplete();
+        });
 
         refCopy.on('edge_removed',function(error, edgeRef, edgeSnap) {
           if(error) {
