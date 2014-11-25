@@ -35,10 +35,9 @@ var phaadArray = function(reverse, callbacks, $timeout, remoteScope, ref) {
   
   var initialAddCompleted;
   var checkIfComplete = function() {
-    if(toBeAdded === 0 && initialAddCompleted) {
-      if(callbacks.onComplete) {
-        callbacks.onComplete(remoteScope, ref);
-      }
+    if(toBeAdded === 0 && callbacks.onComplete && initialAddCompleted) {
+      callbacks.onComplete(remoteScope, ref);
+      delete callbacks.onComplete; // so that its called only once
     }
   };
   
